@@ -1,25 +1,30 @@
-import logo from './logo.svg';
 import './App.css';
+import NavBar from './components/NavBar';
+import Camera from './components/Camera';
+// import logo from './assets/sgLogo.png';
+import MainPage from './components/MainPage'
+import About from './components/About';
+import { Link, BrowserRouter as Router, Route, Switch, HashRouter } from "react-router-dom";
+import { Grommet, Image, Box } from 'grommet';
+
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  <Grommet background='#9FE2BF'>
+      <Router>
+      <Switch>
+        <Route path={`${process.env.PUBLIC_URL}/about`} component={About} />
+        <Route exact path={`${process.env.PUBLIC_URL}/`} component={MainPage} />
+
+      </Switch>
+
+    </Router>
+
+
+  </Grommet>
+  )
+
 }
 
 export default App;
