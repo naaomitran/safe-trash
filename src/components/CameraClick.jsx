@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
-import { Grommet, Button, Box, Meter } from 'grommet';
+import { useSpeechSynthesis } from "react-speech-kit";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import { Grommet, Button } from 'grommet';
 
 
-const Camera = () => {
+const CameraClick = () => {
   const webcamRef = useRef(null);
   const [image, setImage] = useState(null);
   const [page, setPage] = useState("main");
   const [confidence, setConfidence] = useState(0);
+
+  const { speak } = useSpeechSynthesis();
+
+  const commands = [
+    {
+      command: "What is this?",
+      callback: () => takePic(),
+    },
+  ];
+
+  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
 
   const videoConstraints = {
     facingMode: "user",
@@ -23,12 +38,9 @@ const Camera = () => {
   }, [webcamRef]);
 
   function sleep(ms) {
+    // Synchronous Delay
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
-  let recyclenum = 0;
-  let garbnum = 0;
-
 
   const sendImage = async (imgString) => {
     console.log("sending image");
@@ -46,57 +58,44 @@ const Camera = () => {
         setConfidence(score * 100);
 
         if (name === "recyle") {
+          speak({ text: "Recyclable" });
           setPage("recyclePage");
           await sleep(5500);
           setPage("main");
-          recyclenum++;
+          resetTranscript();
         } if (name === "compost") {
+          speak({ text: "Compost" });
           setPage("compostPage");
           await sleep(5500);
           setPage("main");
+          resetTranscript();
         } else {
+          speak({ text: "Garbage" });
           setPage("garbagePage");
           await sleep(5500);
           setPage("main");
-          garbnum++;
+          resetTranscript();
         }
       } catch (error) {
         console.error(error);
-        // alert("An error occurred, please try again.");
-        alert("taking pic and sending");
-
+        alert("An error occurred, please try again.");
       }
-
-      // //update visualizations
-      // if (recyclenum % 100) {
-      //   // updateRM();
-      // }
-      // if (garbnum % 100) {
-      //   // updateGM();
-
-      // }
-
     }
   };
-
-  // function updateRM = () => {
-
-  // };
-
-  // function updateGM = () => {
-
-  // };
 
   const takePic = () => {
     sendImage(capture());
   };
 
+
+  useEffect(() => {
+    SpeechRecognition.startListening({ continuous: true });
+    return () => SpeechRecognition.stopListening();
+  }, [speak]);
+
   return (
     <div className="container-fluid">
       <div>
-        <Box direction='column' align='start'>
-        <Button label="Take Picture" color='#205072' onClick={takePic} align='start'/>
-
         <div className="Webcam">
           <Webcam
             audio={false}
@@ -107,8 +106,7 @@ const Camera = () => {
             videoConstraints={videoConstraints}
           />
         </div>
-        </Box>
-
+        <div className="speech">Speech: {transcript}</div>
         <div>
           {image && (
             <div>
@@ -149,4 +147,4 @@ const Camera = () => {
   );
 };
 
-export default Camera;
+export default CameraClick;
